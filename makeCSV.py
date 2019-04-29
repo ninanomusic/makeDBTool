@@ -7,6 +7,8 @@ import sys, getopt
 import io
 import os
 
+import re           # 정규식을 쓰기위한 :w
+
 #
 # begin code 
 #
@@ -19,7 +21,7 @@ def func(input_csv, output_csv):
     # 출력 파일이 이미 존재하는지 검사. 
     if os.path.isfile(output_csv):
         print ('Already File exists :' + output_csv)
-        exit()
+        #exit()
 
     # 파일 읽기보드로 파일 열기
     try:
@@ -38,6 +40,18 @@ def func(input_csv, output_csv):
     csv_reader = csv.DictReader(fcsv)
     cnt = 1;
 
+
+    #정규식1. 필요없는 문자 제거  
+    #text = u'010-1566#7152'
+    #parse = re.sub('[-=.$/?:$}]', '' , text )
+    #output : 01015667152
+
+    #정규식2. 괄호 문자 추출 
+    #text = "LOG_ADD(LOG_FLOAT,actuatorThurust,&actuatorTrush)"
+    #parse = re.findall('\(([^)]+)', text)
+    #output : ..
+
+
     # 주) 파이선 정규식 이해할것. 
     for row in csv_reader:
         print(row['sno'])
@@ -45,7 +59,11 @@ def func(input_csv, output_csv):
         title.replace("\"\"\"", "\'"); 
         title.replace("\"\"", "\'"); 
         print(title)
-        wr.writerow([cnt, row['sno'], title] )
+        try:
+            m = re.search('\((.*?)\)', row['title'] )
+            wr.writerow([cnt, row['sno'], title, m.group(1) ] )
+        except:
+            wr.writerow([cnt, row['sno'], title, "" ] )
         cnt = cnt +1
     fcsv.close()
     fwcsv.close()
